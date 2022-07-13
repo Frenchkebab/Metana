@@ -64,7 +64,7 @@ contract Token is ERC20 {
 
     // assignment3 - Tokensale with ethereum
     function mintTokenWithEth() public payable {
-        require(totalSupply <= 1000000, "Token supply exceeded 1 million. Sale Closed");
+        require(totalSupply <= 900000, "Token supply exceeded 1 million. Sale Closed");
         require(msg.value == 1 ether, "You must send 1 ether");
         balanceOf[msg.sender] += 1000;
         totalSupply += 1000;
@@ -73,5 +73,29 @@ contract Token is ERC20 {
     function withdrawEth() public onlyGod {
         (bool success, ) = payable(god).call{value: 1 ether}("");
         require(success, "Withdrawal failed");
+    }
+
+    // assignment4
+    function transferToContract() public {
+        require(balanceOf[msg.sender] >= 1000, "Insufficient balance");
+        
+        //! users need to give the smart contract approval to withdraw their ERC20 tokens from their balance.
+        // question: cheaper than calling transfer(address(this)?)
+        balanceOf[msg.sender] -= 1000;
+        balanceOf[address(this)] += 1000;
+
+        (bool success, ) = payable(msg.sender).call{value: 0.5 ether}("");
+        require(success, "Withdrawal failed");
+    }
+
+    function buyTokenWithEth() public payable {
+        if(totalSupply >= 1000000) {
+            require(balanceOf[address(this)] >= 1000, "Not enough supply to sell");
+            require(msg.value == 1 ether, "You must send 1 ether");
+            balanceOf[address(this)] -= 1000;
+            balanceOf[msg.sender] += 1000;
+        } else {
+            mintTokenWithEth();
+        }
     }
 }
