@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import "./ERC20.sol";
 
 contract Token is ERC20 {
-    address private god;
+    address god;
     // mapping(address => uint) public balanceOf;
     // mapping(address => mapping(address => uint)) public override allowance;
     // string public name = "Test";
