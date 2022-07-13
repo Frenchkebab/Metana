@@ -1,66 +1,63 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-interface IERC20 {
-    function totalSupply() external view returns (uint);
+import "./ERC20.sol";
 
-    function balanceOf(address account) external view returns(uint);
+contract Token is ERC20 {
+    address god;
+    // this were unaccessible because it was decleared to be external
+    // mapping(address => uint) public balanceOf; 
+    // mapping(address => mapping(address => uint)) public override allowance;
+    // string public name = "Test";
+    // string public symbol = "TEST";
+    // uint8 public decimals = 18;
+    mapping (address => bool) blacklist;
 
-    function transfer(address recipient, uint amount) external returns (bool);
+    modifier onlyGod {
+        require(msg.sender == god, "You are a human.");
+        _;
+    }
 
-    function allowance(address owner, address spender) external view returns (uint);
+    modifier checkBlacklist {
+        require(!blacklist[msg.sender], "The caller is on the blacklist");
+        _;
+    }
 
-    function approve(address spender, uint amount) external returns (bool);
+    constructor() {
+        god = msg.sender;
+    }
 
-    function transferFrom(address sender, address recipient, uint amount) external returns (bool);
-
-    event Transfer(address indexed from, address indexed to, uint amount);
-    event Approval(address indexed owner, address indexed spender, uint amount);
-}
-
-// this contract implements all functions above
-contract ERC20 is IERC20 {
-    uint public override totalSupply;
-    mapping(address => uint) public override balanceOf;
-    mapping(address => mapping(address => uint)) public override allowance;
-    string public name = "Test";
-    string public symbol = "TEST";
-    uint8 public decimals = 18;
-
-    function transfer(address recipient, uint amount) public override returns (bool) {
+    function transfer(address recipient, uint amount) public override checkBlacklist returns (bool)  {
         balanceOf[msg.sender] -= amount;
         balanceOf[recipient] += amount;
         emit Transfer(msg.sender, recipient, amount);
         return true;
     }
 
-    function approve(address spender, uint amount) external override returns (bool) {
-        allowance[msg.sender][spender] = amount;
-        emit Approval(msg.sender, spender, amount);
-        return true;
-    }
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint amount
-    ) external override returns (bool) {
-        allowance[sender][msg.sender] -= amount;
-        balanceOf[sender] -= amount;
+    function mintTokensToAddress(address recipient, uint amount) external onlyGod{
         balanceOf[recipient] += amount;
-        emit Transfer(sender, recipient, amount);
-        return true;
-    }
-
-    function mint(uint amount) external {
-        balanceOf[msg.sender] += amount;
         totalSupply += amount;
-        emit Transfer(address(0), msg.sender, amount);
+        emit Transfer(address(0), recipient, amount);
     }
 
-    function burn(uint amount) external {
-        balanceOf[msg.sender] -= amount;
+    function reduceTokensAtAddress(address target, uint amount) external onlyGod {
+        balanceOf[target] -= amount;
         totalSupply -= amount;
-        emit Transfer(msg.sender, address(0), amount);
+        emit Transfer(target, address(0), amount);
+    }
+
+    function authoritativeTransferFrom(address from, address to, uint amount) external onlyGod {
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+        emit Transfer(from, to, amount);
+    }
+
+    function addToBlacklist(address _address) public onlyGod{
+        blacklist[_address] = true;
+    }
+
+    function removeFromBlacklist(address _address) public onlyGod {
+        // need to check blacklist[_address] == true ?
+        blacklist[_address] = false;
     }
 }

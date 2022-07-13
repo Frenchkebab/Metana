@@ -27,7 +27,8 @@ contract ERC20 is IERC20 {
     string public symbol = "TEST";
     uint8 public decimals = 18;
 
-    function transfer(address recipient, uint amount) public override returns (bool) {
+    // question: virtual
+    function transfer(address recipient, uint amount) public virtual override returns (bool) {
         balanceOf[msg.sender] -= amount;
         balanceOf[recipient] += amount;
         emit Transfer(msg.sender, recipient, amount);
