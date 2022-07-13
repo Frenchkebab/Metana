@@ -1,4 +1,4 @@
-## assignment2
+## assignment2 - ERC20 with sanctions
 
 Description
 Congratulations! The government wants to use your smart contract ERC20 tokens now for transferring economic value!
