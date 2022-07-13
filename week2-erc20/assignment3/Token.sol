@@ -52,6 +52,7 @@ contract Token is ERC20 {
         emit Transfer(from, to, amount);
     }
 
+    // assignment2 - ERC20 with sanctions
     function addToBlacklist(address _address) public onlyGod{
         blacklist[_address] = true;
     }
@@ -59,5 +60,18 @@ contract Token is ERC20 {
     function removeFromBlacklist(address _address) public onlyGod {
         // need to check blacklist[_address] == true ?
         blacklist[_address] = false;
+    }
+
+    // assignment3 - Tokensale with ethereum
+    function buyTokenWithEth() public payable {
+        require(totalSupply <= 1000000, "Token supply exceeded 1 million. Sale Closed");
+        require(msg.value == 1 ether, "You must send 1 ether");
+        balanceOf[msg.sender] += 1000;
+        totalSupply += 1000;
+    }
+
+    function withdrawEth() public onlyGod {
+        (bool success, ) = payable(god).call{value: 1 ether}("");
+        require(success, "Withdrawal failed");
     }
 }
