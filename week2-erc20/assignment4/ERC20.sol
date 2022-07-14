@@ -21,8 +21,8 @@ interface IERC20 {
 // this contract implements all functions above
 contract ERC20 is IERC20 {
     uint public _totalSupply;
-    mapping(address => uint) private _balances;
-    mapping(address => mapping(address => uint)) private _allowances;
+    mapping(address => uint) internal _balances;
+    mapping(address => mapping(address => uint)) internal _allowances;
     string private _name = "Test";
     string private _symbol = "TEST";
     uint8 private _decimals = 18;
@@ -65,7 +65,7 @@ contract ERC20 is IERC20 {
         return true;
     }
 
-    function approve(address spender, uint amount) external override returns (bool) {
+    function approve(address spender, uint amount) public override returns (bool) {
         _approve(msg.sender, spender, amount);
         return true;
     }
@@ -74,9 +74,9 @@ contract ERC20 is IERC20 {
         address from,
         address to,
         uint amount
-    ) external override returns (bool) {
-        address spender = msg.sender;
-        _spendAllowance(from, spender, amount);
+    ) public override returns (bool) {
+        // address spender = msg.sender;
+        _spendAllowance(from, to, amount);
         _transfer(from, to, amount);
         return true;
     }
@@ -105,6 +105,8 @@ contract ERC20 is IERC20 {
 
         uint256 fromBalance = _balances[from];
         require(fromBalance >= amount, "Transfer amount exceeds balance");
+        _balances[from] = fromBalance - amount;
+        _balances[to] += amount;
 
         emit Transfer(from, to, amount);
     }
@@ -126,8 +128,8 @@ contract ERC20 is IERC20 {
         address spender,
         uint256 amount
     ) internal {
-        uint256 currentAllowance = _allowances[owner][spender];
-        require(currentAllowance >= amount, "Insufficient Allowance");
+        uint256 currentAllowance = allowance(owner, spender)
+                require(currentAllowance >= amount, "Insufficient Allowance");
         _approve(owner, spender, currentAllowance - amount);
     }
 }
